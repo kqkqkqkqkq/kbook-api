@@ -1,5 +1,5 @@
-ARG BUILD_IMAGE=gradle:8.11.0-jdk17
-ARG RUNTIME_IMAGE=eclipse-temurin:17-jre
+ARG BUILD_IMAGE=gradle:8.11.0-jdk21
+ARG RUNTIME_IMAGE=eclipse-temurin:21-jre
 
 FROM ${BUILD_IMAGE} as builder
 
