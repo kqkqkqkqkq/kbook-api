@@ -9,5 +9,8 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENV GRPC_SERVER_PORT=${PORT:-9090}
+
+EXPOSE ${GRPC_SERVER_PORT}
+
+ENTRYPOINT ["sh", "-c", "java -Dgrpc.server.port=${GRPC_SERVER_PORT} -jar app.jar"]
