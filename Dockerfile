@@ -1,18 +1,13 @@
-ARG BUILD_IMAGE=gradle:8.11.0-jdk21
-ARG RUNTIME_IMAGE=eclipse-temurin:21-jre
-
-FROM ${BUILD_IMAGE} as builder
+FROM gradle:8.14-jdk21 AS builder
 
 WORKDIR /app
 COPY . .
-RUN gradle build --no-daemon
+RUN gradle bootJar --no-daemon
 
-FROM ${RUNTIME_IMAGE} as runner
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
-
 COPY --from=builder /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
-
 ENTRYPOINT ["java", "-jar", "app.jar"]
