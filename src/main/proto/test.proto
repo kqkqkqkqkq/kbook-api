@@ -1,0 +1,16 @@
+syntax = "proto3";
+package ru.k.kbook_api;
+option java_package = "ru.k.kbook_api.grpc";
+option java_multiple_files = true;
+
+service TestService {
+  rpc hello (HelloRequest) returns (HelloReply) {}
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloReply {
+  string message = 1;
+}

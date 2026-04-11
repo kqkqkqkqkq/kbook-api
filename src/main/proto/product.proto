@@ -1,0 +1,112 @@
+//syntax = "proto3";
+//package ru.k.kbook_api.grpc;
+//
+//option java_package = "ru.k.kbook_api.grpc";
+//option java_multiple_files = true;
+//
+//import "google/protobuf/timestamp.proto";
+//
+//enum ProductCategory {
+//  FROZEN = 0;
+//  MEAT = 1;
+//  VEGETABLES = 2;
+//  GREENS = 3;
+//  SPICES = 4;
+//  CEREALS = 5;
+//  CANNED = 6;
+//  LIQUID = 7;
+//  SWEETS = 8;
+//}
+//
+//enum CookingRequired {
+//  READY_TO_EAT = 0;
+//  SEMI_FINISHED = 1;
+//  REQUIRES_COOKING = 2;
+//}
+//
+//enum ProductFlag {
+//  VEGAN = 0;
+//  GLUTEN_FREE = 1;
+//  SUGAR_FREE = 2;
+//}
+//
+//enum ContentType {
+//  IMAGE = 0;
+//  URL = 1;
+//}
+//
+//message ProductImageProto {
+//  int64 id = 1;
+//  string url = 2;
+//  bytes image = 3;
+//  ContentType contentType = 4;
+//}
+//
+//message ProductProto {
+//  int64 id = 1;
+//  string name = 2;
+//  repeated ProductImageProto images = 3;
+//  double caloricity = 4;
+//  double protein = 5;
+//  double fat = 6;
+//  double carb = 7;
+//  string description = 8;
+//  ProductCategory category = 9;
+//  CookingRequired cookingRequired = 10;
+//  repeated ProductFlag flags = 11;
+//  google.protobuf.Timestamp createdAt = 12;
+//  google.protobuf.Timestamp updatedAt = 13;
+//}
+//
+//message CreateProductRequest {
+//  string name = 1;
+//  repeated ProductImageProto images = 2;
+//  double caloricity = 3;
+//  double protein = 4;
+//  double fat = 5;
+//  double carb = 6;
+//  string description = 7;
+//  ProductCategory category = 8;
+//  CookingRequired cookingRequired = 9;
+//  repeated ProductFlag flags = 10;
+//}
+//
+//message UpdateProductRequest {
+//  int64 id = 1;
+//  string name = 2;
+//  repeated ProductImageProto images = 3;
+//  double caloricity = 4;
+//  double protein = 5;
+//  double fat = 6;
+//  double carb = 7;
+//  string description = 8;
+//  ProductCategory category = 9;
+//  CookingRequired cookingRequired = 10;
+//  repeated ProductFlag flags = 11;
+//}
+//
+//message GetProductRequest {
+//  int64 id = 1;
+//}
+//
+//message DeleteProductRequest {
+//  int64 id = 1;
+//}
+//
+//message ListProductsRequest {
+//  int32 page = 1;
+//  int32 size = 2;
+//}
+//
+//message ListProductsResponse {
+//  repeated ProductProto products = 1;
+//  int32 total = 2;
+//}
+//
+//service ProductService {
+//  rpc CreateProduct(CreateProductRequest) returns (ProductProto);
+//  rpc GetProduct(GetProductRequest) returns (ProductProto);
+//  rpc UpdateProduct(UpdateProductRequest) returns (ProductProto);
+//  rpc DeleteProduct(DeleteProductRequest) returns (google.protobuf.Empty);
+//  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+//}
