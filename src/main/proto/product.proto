@@ -1,112 +1,158 @@
-//syntax = "proto3";
-//package ru.k.kbook_api.grpc;
-//
-//option java_package = "ru.k.kbook_api.grpc";
-//option java_multiple_files = true;
-//
-//import "google/protobuf/timestamp.proto";
-//
-//enum ProductCategory {
-//  FROZEN = 0;
-//  MEAT = 1;
-//  VEGETABLES = 2;
-//  GREENS = 3;
-//  SPICES = 4;
-//  CEREALS = 5;
-//  CANNED = 6;
-//  LIQUID = 7;
-//  SWEETS = 8;
-//}
-//
-//enum CookingRequired {
-//  READY_TO_EAT = 0;
-//  SEMI_FINISHED = 1;
-//  REQUIRES_COOKING = 2;
-//}
-//
-//enum ProductFlag {
-//  VEGAN = 0;
-//  GLUTEN_FREE = 1;
-//  SUGAR_FREE = 2;
-//}
-//
-//enum ContentType {
-//  IMAGE = 0;
-//  URL = 1;
-//}
-//
-//message ProductImageProto {
-//  int64 id = 1;
-//  string url = 2;
-//  bytes image = 3;
-//  ContentType contentType = 4;
-//}
-//
-//message ProductProto {
-//  int64 id = 1;
-//  string name = 2;
-//  repeated ProductImageProto images = 3;
-//  double caloricity = 4;
-//  double protein = 5;
-//  double fat = 6;
-//  double carb = 7;
-//  string description = 8;
-//  ProductCategory category = 9;
-//  CookingRequired cookingRequired = 10;
-//  repeated ProductFlag flags = 11;
-//  google.protobuf.Timestamp createdAt = 12;
-//  google.protobuf.Timestamp updatedAt = 13;
-//}
-//
-//message CreateProductRequest {
-//  string name = 1;
-//  repeated ProductImageProto images = 2;
-//  double caloricity = 3;
-//  double protein = 4;
-//  double fat = 5;
-//  double carb = 6;
-//  string description = 7;
-//  ProductCategory category = 8;
-//  CookingRequired cookingRequired = 9;
-//  repeated ProductFlag flags = 10;
-//}
-//
-//message UpdateProductRequest {
-//  int64 id = 1;
-//  string name = 2;
-//  repeated ProductImageProto images = 3;
-//  double caloricity = 4;
-//  double protein = 5;
-//  double fat = 6;
-//  double carb = 7;
-//  string description = 8;
-//  ProductCategory category = 9;
-//  CookingRequired cookingRequired = 10;
-//  repeated ProductFlag flags = 11;
-//}
-//
-//message GetProductRequest {
-//  int64 id = 1;
-//}
-//
-//message DeleteProductRequest {
-//  int64 id = 1;
-//}
-//
-//message ListProductsRequest {
-//  int32 page = 1;
-//  int32 size = 2;
-//}
-//
-//message ListProductsResponse {
-//  repeated ProductProto products = 1;
-//  int32 total = 2;
-//}
-//
-//service ProductService {
-//  rpc CreateProduct(CreateProductRequest) returns (ProductProto);
-//  rpc GetProduct(GetProductRequest) returns (ProductProto);
-//  rpc UpdateProduct(UpdateProductRequest) returns (ProductProto);
-//  rpc DeleteProduct(DeleteProductRequest) returns (google.protobuf.Empty);
-//  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
-//}
+syntax = "proto3";
+
+package ru.k.kbook_api.grpc;
+
+option java_multiple_files = true;
+option java_package = "ru.k.kbook_api.grpc.product";
+option java_outer_classname = "ProductProto";
+
+import "google/protobuf/timestamp.proto";
+
+service ProductService {
+  rpc CreateProduct(CreateProductRequest) returns (ProductResponse);
+  rpc GetProduct(GetProductRequest) returns (ProductResponse);
+  rpc UpdateProduct(UpdateProductRequest) returns (ProductResponse);
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+  rpc GetProductsForDish(GetProductsForDishRequest) returns (ListProductsResponse);
+}
+
+enum ProductCategoryDto {
+  FROZEN = 0;
+  MEAT = 1;
+  VEGETABLES = 2;
+  GREENS = 3;
+  SPICES = 4;
+  CEREALS = 5;
+  CANNED = 6;
+  LIQUID = 7;
+  SWEETS = 8;
+}
+
+enum CookingRequiredDto {
+  READY_TO_EAT = 0;
+  SEMI_FINISHED = 1;
+  REQUIRES_COOKING = 2;
+}
+
+enum ProductFlagDto {
+  VEGAN = 0;
+  GLUTEN_FREE = 1;
+  SUGAR_FREE = 2;
+}
+
+enum ContentTypeDto {
+  IMAGE = 0;
+  URL = 1;
+}
+
+enum SortFieldDto {
+  NAME = 0;
+  CALORICITY = 1;
+  PROTEIN = 2;
+  FAT = 3;
+  CARB = 4;
+}
+
+enum SortDirectionDto {
+  ASC = 0;
+  DESC = 1;
+}
+
+message ProductImageDto {
+  uint64 id = 1;
+  string url = 2;
+  bytes image = 3;
+  ContentTypeDto content_type = 4;
+}
+
+message ProductDto {
+  uint64 id = 1;
+  string name = 2;
+  repeated ProductImageDto images = 3;
+  double caloricity = 4;
+  double protein = 5;
+  double fat = 6;
+  double carb = 7;
+  string description = 8;
+  ProductCategoryDto category = 9;
+  CookingRequiredDto cooking_required = 10;
+  repeated ProductFlagDto flags = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+message ProductResponse {
+  ProductDto product = 1;
+  bool success = 2;
+  string message = 3;
+}
+
+message CreateProductRequest {
+  string name = 1;
+  repeated ImageInput images = 2;
+  double caloricity = 3;
+  double protein = 4;
+  double fat = 5;
+  double carb = 6;
+  optional string description = 7;
+  ProductCategoryDto category = 8;
+  CookingRequiredDto cooking_required = 9;
+  repeated ProductFlagDto flags = 10;
+}
+
+message ImageInput {
+  optional string url = 1;
+  optional bytes image = 2;
+  ContentTypeDto content_type = 3;
+}
+
+message GetProductRequest {
+  uint64 id = 1;
+}
+
+message UpdateProductRequest {
+  uint64 id = 1;
+  optional string name = 2;
+  repeated ImageInput images = 3;
+  optional double caloricity = 4;
+  optional double protein = 5;
+  optional double fat = 6;
+  optional double carb = 7;
+  optional string description = 8;
+  optional ProductCategoryDto category = 9;
+  optional CookingRequiredDto cooking_required = 10;
+  repeated ProductFlagDto flags = 11;
+}
+
+message DeleteProductRequest {
+  uint64 id = 1;
+}
+
+message DeleteProductResponse {
+  bool success = 1;
+  string message = 2;
+  repeated string used_in_dishes = 3;
+}
+
+message ListProductsRequest {
+  optional string search_query = 1;
+  repeated ProductCategoryDto categories = 2;
+  repeated CookingRequiredDto cooking_required = 3;
+  repeated ProductFlagDto flags = 4;
+  optional SortFieldDto sort_by = 5;
+  optional SortDirectionDto sort_direction = 6;
+  optional uint32 limit = 7;
+  optional uint32 offset = 8;
+}
+
+message ListProductsResponse {
+  repeated ProductDto products = 1;
+  uint64 total_count = 2;
+  bool success = 3;
+  string message = 4;
+}
+
+message GetProductsForDishRequest {
+  repeated uint64 product_ids = 1;
+}
