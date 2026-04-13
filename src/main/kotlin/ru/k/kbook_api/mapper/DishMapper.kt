@@ -21,7 +21,7 @@ fun DishDbo.toDish(): Dish = Dish(
     protein = protein,
     fat = fat,
     carb = carb,
-    composition = composition.map { row ->
+    composition = products.map { row ->
         DishProduct(
             productId = row.product.id!!,
             product = row.product.toProduct(),

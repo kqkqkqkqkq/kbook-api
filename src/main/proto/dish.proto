@@ -7,14 +7,31 @@ option java_package = "ru.k.kbook_api.grpc.dish";
 option java_outer_classname = "DishProto";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 service DishService {
   rpc CreateDish(CreateDishRequest) returns (Dish);
   rpc GetDish(GetDishRequest) returns (Dish);
   rpc UpdateDish(UpdateDishRequest) returns (Dish);
   rpc DeleteDish(DeleteDishRequest) returns (DeleteDishResponse);
-  rpc ListDishes(DishFilter) returns (DishListResponse);
+  // Designed to behave like ProductService.ListProducts:
+  // empty request body = "no filters".
+  rpc ListDishes(ListDishesRequest) returns (DishListResponse);
   rpc ValidateDish(CreateDishRequest) returns (ValidateDishResponse);
+}
+
+// Wrapper messages to preserve field presence for repeated fields in proto3.
+// This allows UpdateDishRequest to distinguish "not provided" vs "provided empty (clear)".
+message DishImages {
+  repeated DishImage items = 1; // 0-5
+}
+
+message DishComposition {
+  repeated DishProduct items = 1; // min 1 (business rule)
+}
+
+message DishFlags {
+  repeated DishFlag items = 1; // may be empty
 }
 
 // Enums
@@ -74,17 +91,21 @@ message CreateDishRequest {
   double portion_size = 4;  // г >0
   optional DishCategory category = 5; // если задано — приоритет над макросом в названии (2.3)
   repeated DishFlag flags = 6;  // только доступные по 2.4
-  // КБЖУ игнорируется - авто расчёт (2.2)
+  // КБЖУ: система считает черновик (2.2), но пользователь может скорректировать вручную
+  optional double caloricity = 7;
+  optional double protein = 8;
+  optional double fat = 9;
+  optional double carb = 10;
 }
 
 message UpdateDishRequest {
   int64 id = 1;
   optional string name = 2;
-  repeated DishImage images = 3;
-  repeated DishProduct composition = 4;
+  optional DishImages images = 3;            // presence-aware; empty items clears images
+  optional DishComposition composition = 4;  // presence-aware; empty items invalid (min 1)
   optional double portion_size = 5;
   optional DishCategory category = 6;
-  repeated DishFlag flags = 7;
+  optional DishFlags flags = 7;              // presence-aware; empty items clears flags
   // КБЖУ: auto или ручная (опционально)
   optional double caloricity = 8;
   optional double protein = 9;
@@ -92,11 +113,12 @@ message UpdateDishRequest {
   optional double carb = 11;
 }
 
-// Фильтры для списка (2.5)
-message DishFilter {
-  repeated DishCategory categories = 1;
-  repeated DishFlag flags = 2;
-  string search = 3;  // по имени (case insensitive)
+message ListDishesRequest {
+  optional string search_query = 1; // по имени (case insensitive)
+  repeated DishCategory categories = 2;
+  repeated DishFlag flags = 3;
+  optional uint32 limit = 4;
+  optional uint32 offset = 5;
 }
 
 message GetDishRequest {

@@ -1,6 +1,6 @@
 package ru.k.kbook_api.grpc
 
-
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import ru.k.kbook_api.grpc.product.CreateProductRequest
 import ru.k.kbook_api.grpc.product.DeleteProductRequest
@@ -29,16 +29,21 @@ class ProductGrpcService(
     private val productService: ProductService,
 ) : ProductServiceGrpcKt.ProductServiceCoroutineImplBase() {
 
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     override suspend fun createProduct(request: CreateProductRequest): ProductResponse {
         return try {
             val product = request.toProduct()
             val saved = productService.createProduct(product)
-            ProductResponse.newBuilder()
+            val response = ProductResponse.newBuilder()
                 .setProduct(saved.toProductDto())
                 .setSuccess(true)
                 .setMessage("Product created successfully")
                 .build()
+            logger.info("Successfully created product with id ${saved.id}")
+            response
         } catch (e: Exception) {
+            logger.error("Failed to create product: ${e.message}", e)
             ProductResponse.newBuilder()
                 .setSuccess(false)
                 .setMessage("Failed to create product: ${e.message}")
@@ -49,11 +54,14 @@ class ProductGrpcService(
     override suspend fun getProduct(request: GetProductRequest): ProductResponse {
         return try {
             val product = productService.getProductById(request.id)
-            ProductResponse.newBuilder()
+            val response = ProductResponse.newBuilder()
                 .setProduct(product.toProductDto())
                 .setSuccess(true)
                 .build()
+            logger.info("Successfully retrieved product with id ${request.id}")
+            response
         } catch (e: Exception) {
+            logger.error("Product not found: ${e.message}", e)
             ProductResponse.newBuilder()
                 .setSuccess(false)
                 .setMessage("Product not found: ${e.message}")
@@ -66,12 +74,15 @@ class ProductGrpcService(
             val existingProduct = productService.getProductById(request.id)
             val updatedProduct = request.mergeWith(existingProduct)
             val saved = productService.updateProduct(request.id, updatedProduct)
-            ProductResponse.newBuilder()
+            val response = ProductResponse.newBuilder()
                 .setProduct(saved.toProductDto())
                 .setSuccess(true)
                 .setMessage("Product updated successfully")
                 .build()
+            logger.info("Successfully updated product with id ${request.id}")
+            response
         } catch (e: Exception) {
+            logger.error("Failed to update product: ${e.message}", e)
             ProductResponse.newBuilder()
                 .setSuccess(false)
                 .setMessage("Failed to update product: ${e.message}")
@@ -82,17 +93,20 @@ class ProductGrpcService(
     override suspend fun deleteProduct(request: DeleteProductRequest): DeleteProductResponse {
         return try {
             productService.deleteProduct(request.id)
+            logger.info("Successfully deleted product with id ${request.id}")
             DeleteProductResponse.newBuilder()
                 .setSuccess(true)
                 .setMessage("Product deleted successfully")
                 .build()
         } catch (e: ProductInUseException) {
+            logger.warn("Cannot delete product with id ${request.id}: in use by dishes: ${e.dishNames.joinToString()}")
             DeleteProductResponse.newBuilder()
                 .setSuccess(false)
                 .setMessage(e.message)
                 .addAllUsedInDishes(e.dishNames)
                 .build()
         } catch (e: Exception) {
+            logger.error("Failed to delete product: ${e.message}", e)
             DeleteProductResponse.newBuilder()
                 .setSuccess(false)
                 .setMessage("Failed to delete product: ${e.message}")
@@ -105,16 +119,19 @@ class ProductGrpcService(
             val allProducts = productService.getAllProducts().map { it.toProductDto() }
             val filteredProducts = filterAndSortProducts(allProducts, request)
             val total = filteredProducts.size.toLong()
-            val offset = if (request.hasOffset()) request.offset.toInt().coerceAtLeast(0) else 0
-            val limit = if (request.hasLimit()) request.limit.toInt().coerceAtLeast(0) else filteredProducts.size
+            val offset = if (request.hasOffset()) request.offset.coerceAtLeast(0) else 0
+            val limit = if (request.hasLimit()) request.limit.coerceAtLeast(0) else filteredProducts.size
             val page = if (limit > 0) filteredProducts.drop(offset).take(limit) else filteredProducts.drop(offset)
 
-            ListProductsResponse.newBuilder()
+            val response = ListProductsResponse.newBuilder()
                 .addAllProducts(page)
                 .setTotalCount(total)
                 .setSuccess(true)
                 .build()
+            logger.info("Successfully fetched ${filteredProducts.size} products (returned ${page.size})")
+            response
         } catch (e: Exception) {
+            logger.error("Failed to fetch products: ${e.message}", e)
             ListProductsResponse.newBuilder()
                 .setSuccess(false)
                 .setMessage("Failed to fetch products: ${e.message}")
@@ -128,12 +145,15 @@ class ProductGrpcService(
             val products = request.productIdsList.map { id ->
                 productService.getProductById(id).toProductDto()
             }
-            ListProductsResponse.newBuilder()
+            val response = ListProductsResponse.newBuilder()
                 .addAllProducts(products)
                 .setTotalCount(products.size.toLong())
                 .setSuccess(true)
                 .build()
+            logger.info("Successfully fetched ${products.size} products for dish")
+            response
         } catch (e: Exception) {
+            logger.error("Failed to fetch products for dish: ${e.message}", e)
             ListProductsResponse.newBuilder()
                 .setSuccess(false)
                 .setMessage("Failed to fetch products for dish: ${e.message}")

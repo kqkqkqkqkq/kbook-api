@@ -13,10 +13,10 @@ import ru.k.kbook_api.mapper.toDishFlag
 import ru.k.kbook_api.mapper.toDishFlagDbo
 import ru.k.kbook_api.mapper.toDishImageDbo
 import ru.k.kbook_api.repository.DishRepository
+import ru.k.kbook_api.repository.ProductRepository
 import ru.k.kbook_api.repository.entity.dish.DishDbo
 import ru.k.kbook_api.repository.entity.dish.DishProductDbo
 import ru.k.kbook_api.repository.entity.product.ProductFlagDbo
-import ru.k.kbook_api.repository.ProductRepository
 import ru.k.kbook_api.service.model.dish.Dish
 import ru.k.kbook_api.service.model.dish.DishCategory
 import ru.k.kbook_api.service.model.dish.DishFlag
@@ -47,8 +47,18 @@ class DishServiceImpl(
         val cleanName = macroHit?.let { stripMacro(request.name, it) }?.trim() ?: request.name.trim()
         require(cleanName.length >= 2) { "Название после обработки макроса должно быть не короче 2 символов" }
 
-        val kbju = calculateKbju(request.composition, request.portionSize)
-        assertBjuPer100g(kbju, request.portionSize)
+        // Verify that all referenced products exist early to avoid INTERNAL errors later.
+        request.composition.forEach { requireProductExists(it.productId) }
+
+        val calculated = calculateKbju(request.composition, request.portionSize)
+        val finalKbju = Kbju(
+            caloricity = request.caloricity ?: calculated.caloricity,
+            protein = request.protein ?: calculated.protein,
+            fat = request.fat ?: calculated.fat,
+            carb = request.carb ?: calculated.carb,
+        )
+        validateManualKbju(finalKbju)
+        assertBjuPer100g(finalKbju, request.portionSize)
 
         val available = availableFlagsForComposition(request.composition)
         val flags = request.flags.intersect(available)
@@ -58,12 +68,12 @@ class DishServiceImpl(
 
         val dish = DishDbo(
             name = cleanName,
-            images = mutableListOf(),
-            caloricity = kbju.caloricity,
-            protein = kbju.protein,
-            fat = kbju.fat,
-            carb = kbju.carb,
-            composition = mutableListOf(),
+            images = mutableSetOf(),
+            caloricity = finalKbju.caloricity,
+            protein = finalKbju.protein,
+            fat = finalKbju.fat,
+            carb = finalKbju.carb,
+            products = mutableListOf(),
             portionSize = request.portionSize,
             category = category.toDishCategoryDbo(),
             flags = flags.map { it.toDishFlagDbo() }.toMutableSet(),
@@ -73,8 +83,9 @@ class DishServiceImpl(
             dish.images.add(img.toDishImageDbo(dish))
         }
         request.composition.forEach { line ->
+            requireProductExists(line.productId)
             val productRef = productRepository.getReferenceById(line.productId)
-            dish.composition.add(DishProductDbo(dish = dish, product = productRef, quantity = line.quantity))
+            dish.products.add(DishProductDbo(dish = dish, product = productRef, quantity = line.quantity))
         }
 
         dishRepository.save(dish).toDish()
@@ -93,10 +104,10 @@ class DishServiceImpl(
 
         if (request.composition != null) {
             validateComposition(request.composition, request.portionSize ?: existing.portionSize)
-            existing.composition.clear()
+            existing.products.clear()
             request.composition.forEach { line ->
                 val productRef = productRepository.getReferenceById(line.productId)
-                existing.composition.add(DishProductDbo(dish = existing, product = productRef, quantity = line.quantity))
+                existing.products.add(DishProductDbo(dish = existing, product = productRef, quantity = line.quantity))
             }
         }
 
@@ -199,9 +210,25 @@ class DishServiceImpl(
         val categoryOk = request.category != null || findFirstMacro(request.name) != null
         if (!categoryOk) errors.add("Укажите категорию или макрос в названии")
 
-        val kbju = runCatching { calculateKbju(request.composition, request.portionSize) }.getOrNull()
-        if (kbju != null && request.portionSize > 0) {
-            runCatching { assertBjuPer100g(kbju, request.portionSize) }.onFailure {
+        val calculated = runCatching {
+            request.composition.forEach { requireProductExists(it.productId) }
+            calculateKbju(request.composition, request.portionSize)
+        }.getOrElse {
+            errors.add(it.message ?: it.toString())
+            null
+        }
+
+        val finalKbju = calculated?.let {
+            Kbju(
+                caloricity = request.caloricity ?: it.caloricity,
+                protein = request.protein ?: it.protein,
+                fat = request.fat ?: it.fat,
+                carb = request.carb ?: it.carb,
+            )
+        }
+        if (finalKbju != null && request.portionSize > 0) {
+            runCatching { validateManualKbju(finalKbju) }.onFailure { errors.add(it.message ?: it.toString()) }
+            runCatching { assertBjuPer100g(finalKbju, request.portionSize) }.onFailure {
                 errors.add(it.message ?: it.toString())
             }
         }
@@ -214,7 +241,7 @@ class DishServiceImpl(
         ValidateDishResponse(
             valid = errors.isEmpty(),
             errors = errors,
-            calculatedKbju = kbju,
+            calculatedKbju = calculated,
             availableFlags = available,
         )
     }
@@ -226,7 +253,8 @@ class DishServiceImpl(
             var fat = 0.0
             var carb = 0.0
             composition.forEach { line ->
-                val product = productRepository.findById(line.productId).orElseThrow()
+                val product = productRepository.findByIdOrNull(line.productId)
+                    ?: throw IllegalArgumentException("Продукт с id ${line.productId} не найден")
                 val per100g = line.quantity / 100.0
                 cal += product.caloricity * per100g
                 prot += product.protein * per100g
@@ -245,7 +273,8 @@ class DishServiceImpl(
         var gf = true
         var sf = true
         composition.forEach { line ->
-            val p = productRepository.findById(line.productId).orElseThrow()
+            val p = productRepository.findByIdOrNull(line.productId)
+                ?: throw IllegalArgumentException("Продукт с id ${line.productId} не найден")
             if (ProductFlagDbo.VEGAN !in p.flags) vegan = false
             if (ProductFlagDbo.GLUTEN_FREE !in p.flags) gf = false
             if (ProductFlagDbo.SUGAR_FREE !in p.flags) sf = false
@@ -255,6 +284,19 @@ class DishServiceImpl(
             if (gf) add(DishFlag.GLUTEN_FREE)
             if (sf) add(DishFlag.SUGAR_FREE)
         }
+    }
+
+    private fun requireProductExists(productId: Long) {
+        require(productId > 0) { "Некорректный product_id: $productId" }
+        if (productRepository.existsById(productId)) return
+        throw IllegalArgumentException("Продукт с id $productId не найден")
+    }
+
+    private fun validateManualKbju(kbju: Kbju) {
+        require(kbju.caloricity >= 0) { "Калорийность не может быть отрицательной" }
+        require(kbju.protein >= 0) { "Белки не могут быть отрицательными" }
+        require(kbju.fat >= 0) { "Жиры не могут быть отрицательными" }
+        require(kbju.carb >= 0) { "Углеводы не могут быть отрицательными" }
     }
 
     private fun findFirstMacro(name: String): MacroHit? {
@@ -311,5 +353,5 @@ class DishServiceImpl(
     }
 
     private fun DishDbo.toCompositionInputs(): List<DishProduct> =
-        composition.map { DishProduct(it.product.id!!, null, it.quantity) }
+        products.map { DishProduct(it.product.id!!, null, it.quantity) }
 }

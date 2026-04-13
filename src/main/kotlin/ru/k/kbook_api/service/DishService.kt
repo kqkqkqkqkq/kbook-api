@@ -23,7 +23,11 @@ data class CreateDishRequest(
     val composition: List<DishProduct>,
     val portionSize: Double,
     val category: DishCategory? = null,
-    val flags: Set<DishFlag> = emptySet()
+    val flags: Set<DishFlag> = emptySet(),
+    val caloricity: Double? = null,
+    val protein: Double? = null,
+    val fat: Double? = null,
+    val carb: Double? = null,
 )
 
 data class UpdateDishRequest(
@@ -42,7 +46,9 @@ data class UpdateDishRequest(
 data class DishFilter(
     val categories: List<DishCategory>? = null,
     val flags: List<DishFlag>? = null,
-    val search: String? = null
+    val search: String? = null,
+    val limit: Int? = null,
+    val offset: Int? = null,
 )
 
 data class ValidateDishResponse(

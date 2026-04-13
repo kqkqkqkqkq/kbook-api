@@ -24,7 +24,6 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
 
-// TODO("можно создать продукт больше чем с 5 фото")
 @Entity
 @Table(name = "products")
 data class ProductDbo(
@@ -83,5 +82,5 @@ data class ProductDbo(
     val createdAt: LocalDateTime? = null,
 
     @UpdateTimestamp
-    val updatedAt: LocalDateTime? = null
+    val updatedAt: LocalDateTime? = null,
 )

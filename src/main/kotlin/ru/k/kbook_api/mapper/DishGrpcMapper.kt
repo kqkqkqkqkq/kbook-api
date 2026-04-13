@@ -5,11 +5,11 @@ import kotlin.time.ExperimentalTime
 import ru.k.kbook_api.grpc.dish.CreateDishRequest as GrpcCreateDishRequest
 import ru.k.kbook_api.grpc.dish.Dish as GrpcDish
 import ru.k.kbook_api.grpc.dish.DishCategory as GrpcDishCategory
-import ru.k.kbook_api.grpc.dish.DishFilter as GrpcDishFilter
 import ru.k.kbook_api.grpc.dish.DishFlag as GrpcDishFlag
 import ru.k.kbook_api.grpc.dish.DishImage as GrpcDishImage
 import ru.k.kbook_api.grpc.dish.DishListResponse
 import ru.k.kbook_api.grpc.dish.DishProduct as GrpcDishProduct
+import ru.k.kbook_api.grpc.dish.ListDishesRequest as GrpcListDishesRequest
 import ru.k.kbook_api.grpc.dish.UpdateDishRequest as GrpcUpdateDishRequest
 import ru.k.kbook_api.grpc.dish.ValidateDishResponse as GrpcValidateDishResponse
 import ru.k.kbook_api.service.CreateDishRequest
@@ -30,25 +30,31 @@ fun GrpcCreateDishRequest.toServiceCreateDishRequest(): CreateDishRequest = Crea
     portionSize = portionSize,
     category = if (hasCategory()) category.toServiceDishCategory() else null,
     flags = flagsList.map { it.toServiceDishFlag() }.toSet(),
-)
-
-fun GrpcUpdateDishRequest.toServiceUpdateDishRequest(): UpdateDishRequest = UpdateDishRequest(
-    name = if (hasName()) name else null,
-    images = if (imagesCount > 0) imagesList.map { it.toServiceDishImage() } else null,
-    composition = if (compositionCount > 0) compositionList.map { it.toServiceDishProduct() } else null,
-    portionSize = if (hasPortionSize()) portionSize else null,
-    category = if (hasCategory()) category.toServiceDishCategory() else null,
-    flags = if (flagsCount > 0) flagsList.map { it.toServiceDishFlag() }.toSet() else null,
     caloricity = if (hasCaloricity()) caloricity else null,
     protein = if (hasProtein()) protein else null,
     fat = if (hasFat()) fat else null,
     carb = if (hasCarb()) carb else null,
 )
 
-fun GrpcDishFilter.toServiceDishFilter(): DishFilter = DishFilter(
+fun GrpcUpdateDishRequest.toServiceUpdateDishRequest(): UpdateDishRequest = UpdateDishRequest(
+    name = if (hasName()) name else null,
+    images = if (hasImages()) images.itemsList.map { it.toServiceDishImage() } else null,
+    composition = if (hasComposition()) composition.itemsList.map { it.toServiceDishProduct() } else null,
+    portionSize = if (hasPortionSize()) portionSize else null,
+    category = if (hasCategory()) category.toServiceDishCategory() else null,
+    flags = if (hasFlags()) flags.itemsList.map { it.toServiceDishFlag() }.toSet() else null,
+    caloricity = if (hasCaloricity()) caloricity else null,
+    protein = if (hasProtein()) protein else null,
+    fat = if (hasFat()) fat else null,
+    carb = if (hasCarb()) carb else null,
+)
+
+fun GrpcListDishesRequest.toServiceDishFilter(): DishFilter = DishFilter(
     categories = if (categoriesCount > 0) categoriesList.map { it.toServiceDishCategory() } else null,
     flags = if (flagsCount > 0) flagsList.map { it.toServiceDishFlag() } else null,
-    search = search.takeIf { it.isNotBlank() },
+    search = if (hasSearchQuery()) searchQuery.trim().takeIf { it.isNotEmpty() } else null,
+    limit = if (hasLimit()) limit.toInt().coerceAtLeast(0) else null,
+    offset = if (hasOffset()) offset.toInt().coerceAtLeast(0) else null,
 )
 
 fun GrpcDishImage.toServiceDishImage(): DishImage = DishImage(
@@ -156,7 +162,8 @@ fun ValidateDishResponse.toGrpcValidateDishResponse(): GrpcValidateDishResponse 
 }
 
 fun List<Dish>.toGrpcDishListResponse(): DishListResponse {
-    val b = DishListResponse.newBuilder().setTotal(size)
-    forEach { b.addDishes(it.toGrpcDish()) }
-    return b.build()
+    return DishListResponse.newBuilder()
+        .setTotal(size)
+        .addAllDishes(this.map { it.toGrpcDish() } )
+        .build()
 }

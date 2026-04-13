@@ -12,7 +12,6 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.Lob
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
@@ -22,7 +21,6 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import ru.k.kbook_api.repository.entity.product.ContentTypeDbo
 import ru.k.kbook_api.repository.entity.product.ProductDbo
 import java.time.LocalDateTime
 
@@ -39,7 +37,7 @@ class DishDbo(
     var name: String,
 
     @OneToMany(mappedBy = "dish", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-    var images: MutableList<DishImageDbo> = mutableListOf(),
+    var images: MutableSet<DishImageDbo> = mutableSetOf(),
 
     @Column(nullable = false)
     @field:DecimalMin("0.0")
@@ -58,7 +56,7 @@ class DishDbo(
     var carb: Double,
 
     @OneToMany(mappedBy = "dish", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-    var composition: MutableList<DishProductDbo> = mutableListOf(),
+    var products: MutableList<DishProductDbo> = mutableListOf(),
 
     @Column(nullable = false)
     @field:DecimalMin(value = "0.0", inclusive = false, message = "Размер порции должен быть больше 0")
@@ -80,45 +78,4 @@ class DishDbo(
 
     @UpdateTimestamp
     var updatedAt: LocalDateTime? = null,
-)
-
-@Entity
-@Table(name = "dish_images")
-class DishImageDbo(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dish_id", nullable = false)
-    var dish: DishDbo,
-
-    var url: String? = null,
-
-    @Lob
-    @Column(name = "image", columnDefinition = "BLOB")
-    var image: ByteArray? = null,
-
-    @Enumerated(EnumType.STRING)
-    var contentType: ContentTypeDbo = ContentTypeDbo.URL,
-)
-
-@Entity
-@Table(name = "dish_products")
-class DishProductDbo(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dish_id", nullable = false)
-    var dish: DishDbo,
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    var product: ProductDbo,
-
-    @Column(nullable = false)
-    @field:DecimalMin(value = "0.0", inclusive = false)
-    var quantity: Double,
 )
