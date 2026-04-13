@@ -1,18 +1,18 @@
 package ru.k.kbook_api.mapper
 
 import kotlinx.datetime.toKotlinLocalDateTime
-import ru.k.kbook_api.repository.entity.ContentTypeDbo
-import ru.k.kbook_api.repository.entity.CookingRequiredDbo
-import ru.k.kbook_api.repository.entity.ProductCategoryDbo
-import ru.k.kbook_api.repository.entity.ProductDbo
-import ru.k.kbook_api.repository.entity.ProductFlagDbo
-import ru.k.kbook_api.repository.entity.ProductImageDbo
-import ru.k.kbook_api.service.model.ContentType
-import ru.k.kbook_api.service.model.CookingRequired
-import ru.k.kbook_api.service.model.Product
-import ru.k.kbook_api.service.model.ProductCategory
-import ru.k.kbook_api.service.model.ProductFlag
-import ru.k.kbook_api.service.model.ProductImage
+import ru.k.kbook_api.repository.entity.product.ContentTypeDbo
+import ru.k.kbook_api.repository.entity.product.CookingRequiredDbo
+import ru.k.kbook_api.repository.entity.product.ProductCategoryDbo
+import ru.k.kbook_api.repository.entity.product.ProductDbo
+import ru.k.kbook_api.repository.entity.product.ProductFlagDbo
+import ru.k.kbook_api.repository.entity.product.ProductImageDbo
+import ru.k.kbook_api.service.model.product.ContentType
+import ru.k.kbook_api.service.model.product.CookingRequired
+import ru.k.kbook_api.service.model.product.Product
+import ru.k.kbook_api.service.model.product.ProductCategory
+import ru.k.kbook_api.service.model.product.ProductFlag
+import ru.k.kbook_api.service.model.product.ProductImage
 
 fun ProductDbo.toProduct() = Product(
     id = id,

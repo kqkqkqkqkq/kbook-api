@@ -5,7 +5,6 @@ import com.google.protobuf.kotlin.toByteString
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
-import kotlinx.datetime.toJavaLocalDateTime
 import ru.k.kbook_api.grpc.product.ContentTypeDto
 import ru.k.kbook_api.grpc.product.CookingRequiredDto
 import ru.k.kbook_api.grpc.product.CreateProductRequest
@@ -15,15 +14,12 @@ import ru.k.kbook_api.grpc.product.ProductDto
 import ru.k.kbook_api.grpc.product.ProductFlagDto
 import ru.k.kbook_api.grpc.product.ProductImageDto
 import ru.k.kbook_api.grpc.product.UpdateProductRequest
-import ru.k.kbook_api.service.model.ContentType
-import ru.k.kbook_api.service.model.CookingRequired
-import ru.k.kbook_api.service.model.Product
-import ru.k.kbook_api.service.model.ProductCategory
-import ru.k.kbook_api.service.model.ProductFlag
-import ru.k.kbook_api.service.model.ProductImage
-import java.sql.Time
-import java.time.Instant
-import java.time.ZoneOffset
+import ru.k.kbook_api.service.model.product.ContentType
+import ru.k.kbook_api.service.model.product.CookingRequired
+import ru.k.kbook_api.service.model.product.Product
+import ru.k.kbook_api.service.model.product.ProductCategory
+import ru.k.kbook_api.service.model.product.ProductFlag
+import ru.k.kbook_api.service.model.product.ProductImage
 import kotlin.time.ExperimentalTime
 
 
@@ -65,7 +61,7 @@ fun ImageInput.toProductImage(): ProductImage {
         id = null,
         productId = null,
         url = if (hasUrl()) url else "",
-        image = image.toByteArray(),
+        image = if (hasImage()) image.toByteArray() else null,
         contentType = contentType.toContentType()
     )
 }

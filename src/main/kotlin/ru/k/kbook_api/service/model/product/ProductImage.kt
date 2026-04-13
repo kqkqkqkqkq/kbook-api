@@ -1,4 +1,4 @@
-package ru.k.kbook_api.service.model
+package ru.k.kbook_api.service.model.product
 
 data class ProductImage(
     val id: Long? = null,

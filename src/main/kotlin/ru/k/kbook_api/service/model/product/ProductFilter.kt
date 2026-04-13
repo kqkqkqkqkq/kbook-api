@@ -1,4 +1,4 @@
-package ru.k.kbook_api.service.model
+package ru.k.kbook_api.service.model.product
 
 data class ProductFilter(
     val searchQuery: String? = null,

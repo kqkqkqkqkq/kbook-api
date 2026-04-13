@@ -1,4 +1,4 @@
-package ru.k.kbook_api.repository.entity
+package ru.k.kbook_api.repository.entity.product
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

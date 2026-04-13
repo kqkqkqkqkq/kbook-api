@@ -1,4 +1,4 @@
-package ru.k.kbook_api.repository.entity
+package ru.k.kbook_api.repository.entity.product
 
 enum class ProductFlagDbo {
     VEGAN,

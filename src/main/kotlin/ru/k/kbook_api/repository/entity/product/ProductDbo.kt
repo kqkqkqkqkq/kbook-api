@@ -1,4 +1,4 @@
-package ru.k.kbook_api.repository.entity
+package ru.k.kbook_api.repository.entity.product
 
 import jakarta.persistence.CascadeType
 import jakarta.persistence.CollectionTable
@@ -24,6 +24,7 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
 
+// TODO("можно создать продукт больше чем с 5 фото")
 @Entity
 @Table(name = "products")
 data class ProductDbo(
