@@ -30,14 +30,6 @@ fun ProductDbo.toProduct() = Product(
     updatedAt = updatedAt?.toKotlinLocalDateTime(),
 )
 
-fun ProductImageDbo.toProductImage() = ProductImage(
-    id = id,
-    productId = productId,
-    url = url,
-    image = image,
-    contentType = contentType.toContentType()
-)
-
 fun ContentTypeDbo.toContentType() = when(this) {
     ContentTypeDbo.IMAGE -> ContentType.IMAGE
     ContentTypeDbo.URL -> ContentType.URL
@@ -71,6 +63,7 @@ fun Product.toProductDbo(): ProductDbo {
     val productDbo = ProductDbo(
         id = id,
         name = name,
+        images = images.map { it.toProductImageDbo() }.toMutableList(),
         caloricity = caloricity,
         protein = protein,
         fat = fat,
@@ -78,16 +71,22 @@ fun Product.toProductDbo(): ProductDbo {
         description = description,
         category = category.toProductCategoryDbo(),
         cookingRequired = cookingRequired.toCookingRequiredDbo(),
-        flags = flags.map { it.toProductFlagDbo() }.toMutableSet(),
-        images = images.map { it.toProductImageDbo() }.toMutableList(),
+        flags = flags.map { it.toProductFlagDbo() }.toMutableSet()
     )
     productDbo.images.forEach { it.product = productDbo }
     return productDbo
 }
 
+fun ProductImageDbo.toProductImage() = ProductImage(
+    id = id,
+    productId = product?.id,
+    url = url,
+    image = image,
+    contentType = contentType.toContentType()
+)
+
 fun ProductImage.toProductImageDbo() = ProductImageDbo(
     id = id,
-    productId = productId,
     url = url,
     image = image,
     contentType = contentType.toContentTypeDbo()
