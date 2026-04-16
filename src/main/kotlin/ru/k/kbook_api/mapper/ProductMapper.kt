@@ -77,7 +77,8 @@ fun Product.toProductDbo() = ProductDbo(
     description = description,
     category = category.toProductCategoryDbo(),
     cookingRequired = cookingRequired.toCookingRequiredDbo(),
-    flags = flags.map { it.toProductFlagDbo() }.toMutableSet()
+    flags = flags.map { it.toProductFlagDbo() }.toMutableSet(),
+    images = images.map { it.toProductImageDbo() }.toMutableList(),
 )
 
 fun ProductImage.toProductImageDbo() = ProductImageDbo(
