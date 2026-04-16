@@ -17,8 +17,9 @@ data class ProductImageDbo(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    @Column(name = "product_id", insertable = false, updatable = false)
-    val productId: Long? = null,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    var product: ProductDbo? = null,
 
     val url: String? = null,
 
