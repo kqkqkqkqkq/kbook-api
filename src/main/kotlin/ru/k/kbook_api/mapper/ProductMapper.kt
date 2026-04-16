@@ -67,19 +67,23 @@ fun ProductFlagDbo.toProductFlag() = when(this) {
     ProductFlagDbo.SUGAR_FREE -> ProductFlag.SUGAR_FREE
 }
 
-fun Product.toProductDbo() = ProductDbo(
-    id = id,
-    name = name,
-    caloricity = caloricity,
-    protein = protein,
-    fat = fat,
-    carb = carb,
-    description = description,
-    category = category.toProductCategoryDbo(),
-    cookingRequired = cookingRequired.toCookingRequiredDbo(),
-    flags = flags.map { it.toProductFlagDbo() }.toMutableSet(),
-    images = images.map { it.toProductImageDbo() }.toMutableList(),
-)
+fun Product.toProductDbo(): ProductDbo {
+    val productDbo = ProductDbo(
+        id = id,
+        name = name,
+        caloricity = caloricity,
+        protein = protein,
+        fat = fat,
+        carb = carb,
+        description = description,
+        category = category.toProductCategoryDbo(),
+        cookingRequired = cookingRequired.toCookingRequiredDbo(),
+        flags = flags.map { it.toProductFlagDbo() }.toMutableSet(),
+        images = images.map { it.toProductImageDbo() }.toMutableList(),
+    )
+    productDbo.images.forEach { it.product = productDbo }
+    return productDbo
+}
 
 fun ProductImage.toProductImageDbo() = ProductImageDbo(
     id = id,
