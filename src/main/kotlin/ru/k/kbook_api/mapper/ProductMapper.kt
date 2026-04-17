@@ -63,7 +63,7 @@ fun Product.toProductDbo(): ProductDbo {
     val productDbo = ProductDbo(
         id = id,
         name = name,
-        images = images.map { it.toProductImageDbo() }.toMutableList(),
+        images = images.map { it.toProductImageDbo() }.toSet().toMutableList(),
         caloricity = caloricity,
         protein = protein,
         fat = fat,
