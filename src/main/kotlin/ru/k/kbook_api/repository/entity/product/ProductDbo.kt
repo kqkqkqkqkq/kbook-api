@@ -36,7 +36,12 @@ data class ProductDbo(
     @NotBlank
     val name: String,
 
-    @OneToMany(mappedBy = "product", cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+    @OneToMany(
+        mappedBy = "product",
+        cascade = [CascadeType.ALL],
+        fetch = FetchType.LAZY,
+        orphanRemoval = true
+    )
     val images: MutableList<ProductImageDbo> = mutableListOf(),
 
     @Column(nullable = false)
