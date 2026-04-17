@@ -112,8 +112,6 @@ fun Product.toProductDto(): ProductDto {
         .setCategory(category.toProductCategoryDto())
         .setCookingRequired(cookingRequired.toCookingRequiredDto())
         .addAllFlags(flags.map { it.toProductFlagDto() })
-        .setCreatedAt(createdAt?.toProtoTimestamp())
-        .setUpdatedAt(updatedAt?.toProtoTimestamp())
         .build()
 }
 
