@@ -36,7 +36,8 @@ class DishDbo(
     @field:NotBlank
     var name: String,
 
-    @OneToMany(mappedBy = "dish", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "dish", cascade = [CascadeType.ALL], 
+               orphanRemoval = true, fetch = FetchType.EAGER)
     var images: MutableSet<DishImageDbo> = mutableSetOf(),
 
     @Column(nullable = false)
@@ -55,7 +56,8 @@ class DishDbo(
     @field:DecimalMin("0.0")
     var carb: Double,
 
-    @OneToMany(mappedBy = "dish", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "dish", cascade = [CascadeType.ALL], 
+               orphanRemoval = true, fetch = FetchType.EAGER)
     var products: MutableList<DishProductDbo> = mutableListOf(),
 
     @Column(nullable = false)
