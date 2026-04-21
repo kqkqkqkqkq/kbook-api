@@ -39,6 +39,9 @@ class DishGrpcService(
     } catch (e: IllegalArgumentException) {
         logger.error(e.message)
         throw StatusException(Status.INVALID_ARGUMENT.withDescription(e.message))
+    } catch (e: Exception) {
+        logger.error("Unexpected error in create dishDish", e)
+        throw StatusException(Status.INTERNAL.withDescription("Internal server error: ${e.message}"))
     }
 
     override suspend fun getDish(request: GetDishRequest): Dish = try {
@@ -48,6 +51,9 @@ class DishGrpcService(
     } catch (e: EntityNotFoundException) {
         logger.error(e.message)
         throw StatusException(Status.NOT_FOUND.withDescription(e.message))
+    } catch (e: Exception) {
+        logger.error("Unexpected error in create getDish", e)
+        throw StatusException(Status.INTERNAL.withDescription("Internal server error: ${e.message}"))
     }
 
     override suspend fun updateDish(request: UpdateDishRequest): Dish = try {
@@ -60,6 +66,9 @@ class DishGrpcService(
     } catch (e: EntityNotFoundException) {
         logger.error(e.message)
         throw StatusException(Status.NOT_FOUND.withDescription(e.message))
+    } catch (e: Exception) {
+        logger.error("Unexpected error in create updateDish", e)
+        throw StatusException(Status.INTERNAL.withDescription("Internal server error: ${e.message}"))
     }
 
     override suspend fun deleteDish(request: DeleteDishRequest): DeleteDishResponse = try {
@@ -69,6 +78,9 @@ class DishGrpcService(
     } catch (e: EntityNotFoundException) {
         logger.error(e.message)
         throw StatusException(Status.NOT_FOUND.withDescription(e.message))
+    } catch (e: Exception) {
+        logger.error("Unexpected error in create deleteDish", e)
+        throw StatusException(Status.INTERNAL.withDescription("Internal server error: ${e.message}"))
     }
 
     override suspend fun listDishes(request: ListDishesRequest): DishListResponse = try {
@@ -79,6 +91,9 @@ class DishGrpcService(
     } catch (e: Exception) {
         logger.error(e.message)
         throw StatusException(Status.INTERNAL.withDescription(e.message))
+    } catch (e: Exception) {
+        logger.error("Unexpected error in create listDishes", e)
+        throw StatusException(Status.INTERNAL.withDescription("Internal server error: ${e.message}"))
     }
 
     override suspend fun validateDish(request: CreateDishRequest): ValidateDishResponse = try {
@@ -88,5 +103,5 @@ class DishGrpcService(
     } catch (e: Exception) {
         logger.error("Validation failed: ${e.message}")
         throw StatusException(Status.INVALID_ARGUMENT.withDescription("Validation error: ${e.message}"))
-    }
+    } 
 }
