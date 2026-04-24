@@ -13,7 +13,7 @@ interface DishService {
     suspend fun listDishes(filter: DishFilter): List<Dish>
     suspend fun deleteDish(id: Long)
     suspend fun validateDish(request: CreateDishRequest): ValidateDishResponse
-    suspend fun calculateKbju(composition: List<DishProduct>, portionSize: Double): Kbju
+    suspend fun calculateKbju(composition: List<DishProduct>): Kbju
     suspend fun getAvailableFlags(composition: List<DishProduct>): Set<DishFlag>
 }
 

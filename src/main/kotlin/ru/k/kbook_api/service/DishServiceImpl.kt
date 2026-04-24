@@ -50,7 +50,7 @@ class DishServiceImpl(
         // Verify that all referenced products exist early to avoid INTERNAL errors later.
         request.composition.forEach { requireProductExists(it.productId) }
 
-        val calculated = calculateKbju(request.composition, request.portionSize)
+        val calculated = calculateKbju(request.composition)
         val finalKbju = Kbju(
             caloricity = request.caloricity ?: calculated.caloricity,
             protein = request.protein ?: calculated.protein,
@@ -137,7 +137,7 @@ class DishServiceImpl(
         val portionForCalc = existing.portionSize
         val recalc = request.composition != null || request.portionSize != null
         if (recalc) {
-            val kbju = calculateKbju(compositionForCalc, portionForCalc)
+            val kbju = calculateKbju(compositionForCalc)
             assertBjuPer100g(kbju, portionForCalc)
             existing.caloricity = request.caloricity ?: kbju.caloricity
             existing.protein = request.protein ?: kbju.protein
@@ -212,7 +212,7 @@ class DishServiceImpl(
 
         val calculated = runCatching {
             request.composition.forEach { requireProductExists(it.productId) }
-            calculateKbju(request.composition, request.portionSize)
+            calculateKbju(request.composition)
         }.getOrElse {
             errors.add(it.message ?: it.toString())
             null
@@ -246,7 +246,7 @@ class DishServiceImpl(
         )
     }
 
-    override suspend fun calculateKbju(composition: List<DishProduct>, portionSize: Double): Kbju =
+    override suspend fun calculateKbju(composition: List<DishProduct>): Kbju =
         withContext(Dispatchers.IO) {
             var cal = 0.0
             var prot = 0.0
