@@ -5,6 +5,8 @@ import com.google.protobuf.kotlin.toByteString
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
+import org.slf4j.LoggerFactory
 import ru.k.kbook_api.grpc.product.ContentTypeDto
 import ru.k.kbook_api.grpc.product.CookingRequiredDto
 import ru.k.kbook_api.grpc.product.CreateProductRequest
@@ -20,6 +22,7 @@ import ru.k.kbook_api.service.model.product.Product
 import ru.k.kbook_api.service.model.product.ProductCategory
 import ru.k.kbook_api.service.model.product.ProductFlag
 import ru.k.kbook_api.service.model.product.ProductImage
+import kotlin.time.Clock.System.now
 import kotlin.time.ExperimentalTime
 
 
@@ -39,8 +42,9 @@ fun CreateProductRequest.toProduct(): Product {
     )
 }
 
+@OptIn(ExperimentalTime::class)
 fun UpdateProductRequest.mergeWith(existing: Product): Product {
-    return Product(
+    val product = Product(
         id = existing.id,
         name = if (hasName()) name else existing.name,
         images = if (imagesList.isNotEmpty()) imagesList.map { it.toProductImage() } else existing.images,
@@ -52,8 +56,10 @@ fun UpdateProductRequest.mergeWith(existing: Product): Product {
         category = if (hasCategory()) category.toProductCategory() else existing.category,
         cookingRequired = if (hasCookingRequired()) cookingRequired.toCookingRequired() else existing.cookingRequired,
         flags = if (flagsList.isNotEmpty()) flagsList.map { it.toProductFlag() }.toSet() else existing.flags,
-        createdAt = existing.createdAt,
+        createdAt = existing.createdAt ?: now().toLocalDateTime(TimeZone.UTC),
+        updatedAt = now().toLocalDateTime(TimeZone.UTC),
     )
+    return product
 }
 
 fun ImageInput.toProductImage(): ProductImage {
@@ -100,7 +106,7 @@ fun ContentTypeDto.toContentType(): ContentType = when (this) {
 }
 
 fun Product.toProductDto(): ProductDto {
-    return ProductDto.newBuilder()
+    val builder = ProductDto.newBuilder()
         .setId(id ?: 0)
         .setName(name)
         .addAllImages(images.map { it.toProductImageDto() })
@@ -112,7 +118,11 @@ fun Product.toProductDto(): ProductDto {
         .setCategory(category.toProductCategoryDto())
         .setCookingRequired(cookingRequired.toCookingRequiredDto())
         .addAllFlags(flags.map { it.toProductFlagDto() })
-        .build()
+
+    createdAt?.let { builder.setCreatedAt(it.toProtoTimestamp()) }
+    updatedAt?.let { builder.setUpdatedAt(it.toProtoTimestamp()) }
+
+    return builder.build()
 }
 
 fun ProductImage.toProductImageDto(): ProductImageDto {
@@ -154,7 +164,8 @@ fun ContentType.toContentTypeDto(): ContentTypeDto = when (this) {
 }
 
 @OptIn(ExperimentalTime::class)
-fun LocalDateTime.toProtoTimestamp(): Timestamp {
+fun LocalDateTime?.toProtoTimestamp(): Timestamp? {
+    if (this == null) return null
     val instant = this.toInstant(TimeZone.UTC)
     return Timestamp.newBuilder()
         .setSeconds(instant.epochSeconds)

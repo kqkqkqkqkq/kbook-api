@@ -117,6 +117,8 @@ fun Dish.toGrpcDish(): GrpcDish {
         .setProtein(protein)
         .setFat(fat)
         .setCarb(carb)
+        .setCreatedAt(createdAt?.toProtoTimestamp())
+        .setUpdatedAt(updatedAt?.toProtoTimestamp())
         .setPortionSize(portionSize)
         .setCategory(category.toGrpcDishCategory())
     images.forEach { b.addImages(it.toGrpcDishImage()) }
