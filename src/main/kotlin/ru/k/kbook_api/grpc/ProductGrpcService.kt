@@ -43,7 +43,7 @@ class ProductGrpcService(
             logger.info("Successfully created product with id ${saved.id}")
             response
         } catch (e: Exception) {
-            logger.error("Failed to create product: ${e.message}", e)
+            logger.error("Failed to create product: ${e.message}")
             ProductResponse.newBuilder()
                 .setSuccess(false)
                 .setMessage("Failed to create product: ${e.message}")
@@ -61,7 +61,7 @@ class ProductGrpcService(
             logger.info("Successfully retrieved product with id ${request.id}")
             response
         } catch (e: Exception) {
-            logger.error("Product not found: ${e.message}", e)
+            logger.error("Product not found: ${e.message}")
             ProductResponse.newBuilder()
                 .setSuccess(false)
                 .setMessage("Product not found: ${e.message}")
@@ -82,7 +82,7 @@ class ProductGrpcService(
             logger.info("Successfully updated product with id ${request.id}")
             response
         } catch (e: Exception) {
-            logger.error("Failed to update product: ${e.message}", e)
+            logger.error("Failed to update product: ${e.message}")
             ProductResponse.newBuilder()
                 .setSuccess(false)
                 .setMessage("Failed to update product: ${e.message}")
@@ -106,7 +106,7 @@ class ProductGrpcService(
                 .addAllUsedInDishes(e.dishNames)
                 .build()
         } catch (e: Exception) {
-            logger.error("Failed to delete product: ${e.message}", e)
+            logger.error("Failed to delete product: ${e.message}")
             DeleteProductResponse.newBuilder()
                 .setSuccess(false)
                 .setMessage("Failed to delete product: ${e.message}")
@@ -131,7 +131,7 @@ class ProductGrpcService(
             logger.info("Successfully fetched ${filteredProducts.size} products (returned ${page.size})")
             response
         } catch (e: Exception) {
-            logger.error("Failed to fetch products: ${e.message}", e)
+            logger.error("Failed to fetch products: ${e.message}")
             ListProductsResponse.newBuilder()
                 .setSuccess(false)
                 .setMessage("Failed to fetch products: ${e.message}")
@@ -153,7 +153,7 @@ class ProductGrpcService(
             logger.info("Successfully fetched ${products.size} products for dish")
             response
         } catch (e: Exception) {
-            logger.error("Failed to fetch products for dish: ${e.message}", e)
+            logger.error("Failed to fetch products for dish: ${e.message}")
             ListProductsResponse.newBuilder()
                 .setSuccess(false)
                 .setMessage("Failed to fetch products for dish: ${e.message}")
@@ -167,13 +167,11 @@ class ProductGrpcService(
     ): List<ProductDto> {
         var result = products.asSequence()
 
-        // Поисковый запрос (по названию, частичное совпадение, регистронезависимо)
         if (request.hasSearchQuery()) {
             val query = request.searchQuery.lowercase().trim()
             result = result.filter { it.name.lowercase().contains(query) }
         }
 
-        // Фильтр по категориям
         if (request.categoriesList.isNotEmpty()) {
             val categories = request.categoriesList.mapNotNull { dto ->
                 ProductCategory.entries.find { it.name == dto.name }
@@ -181,7 +179,6 @@ class ProductGrpcService(
             result = result.filter { it.category.name in categories.map { c -> c.name } }
         }
 
-        // Фильтр по способу приготовления
         if (request.cookingRequiredList.isNotEmpty()) {
             val cookingTypes = request.cookingRequiredList.mapNotNull { dto ->
                 CookingRequired.entries.find { it.name == dto.name }
@@ -189,7 +186,6 @@ class ProductGrpcService(
             result = result.filter { it.cookingRequired.name in cookingTypes.map { c -> c.name } }
         }
 
-        // Фильтр по флагам (все переданные флаги должны присутствовать)
         if (request.flagsList.isNotEmpty()) {
             val flags = request.flagsList.mapNotNull { dto ->
                 ProductFlag.entries.find { it.name == dto.name }
@@ -199,7 +195,6 @@ class ProductGrpcService(
             }
         }
 
-        // Сортировка
         val comparator: Comparator<ProductDto> = when {
             request.hasSortBy() -> when (request.sortBy) {
                 SortFieldDto.NAME -> compareBy { it.name }

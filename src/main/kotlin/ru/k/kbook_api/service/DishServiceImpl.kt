@@ -246,7 +246,6 @@ class DishServiceImpl(
         )
     }
 
-    // TODO("calculateKbju")
     override suspend fun calculateKbju(composition: List<DishProduct>): Kbju = withContext(Dispatchers.IO) {
         var cal = 0.0
         var prot = 0.0

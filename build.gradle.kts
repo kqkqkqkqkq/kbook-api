@@ -115,12 +115,15 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-jdbc-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-liquibase-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-	testImplementation("org.springframework.grpc:spring-grpc-test")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	// gRPC
+	testImplementation("org.springframework.grpc:spring-grpc-test")
+	// Allure
 	val allureVersion = "2.25.0"
 	testImplementation(platform("io.qameta.allure:allure-bom:$allureVersion"))
 	testImplementation("io.qameta.allure:allure-junit5")
+	// Kotest
 	val kotestVersion = "6.1.11"
 	testImplementation("io.kotest:kotest-assertions-core:${kotestVersion}")
 	testImplementation("io.kotest:kotest-property:${kotestVersion}")
