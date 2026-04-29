@@ -98,6 +98,20 @@ class DishServiceTest {
     }
 
     @Test
+    @DisplayName("Передано нулевое количество продукта")
+    @Description("При нулевом количестве продукта будет нулевое КБЖУ")
+    @Severity(SeverityLevel.NORMAL)
+    @Owner(owner)
+    fun `GIVEN zero quantity WHEN call calculateKbju THEN throw IllegalArgumentException`() = runTest {
+        val product = chicken
+        coEvery { productRepository.findByIdOrNull(product.id!!) } returns product
+        val composition = listOf(DishProduct(product.id!!, null, 0.0))
+        val result = dishService.calculateKbju(composition)
+        val expected = Kbju(0.0, 0.0, 0.0, 0.0)
+        assertEquals(expected, result)
+    }
+
+    @Test
     @DisplayName("Состав из 3 продуктов")
     @Description("При составе из нескольких продуктов КБЖУ корректно расчитывается")
     @Severity(SeverityLevel.CRITICAL)
@@ -115,12 +129,7 @@ class DishServiceTest {
 
         val result = dishService.calculateKbju(composition)
 
-        val expectedCal = 150.0 * 1.5 + 120.0 * 1.0 + 160.0 * 0.5 // = 225 + 120 + 80 = 425
-        val expectedProt = 30.0 * 1.5 + 4.0 * 1.0 + 2.0 * 0.5     // = 45 + 4 + 1 = 50
-        val expectedFat = 5.0 * 1.5 + 0.5 * 1.0 + 15.0 * 0.5      // = 7.5 + 0.5 + 7.5 = 15.5
-        val expectedCarb = 0.0 * 1.5 + 28.0 * 1.0 + 9.0 * 0.5     // = 0 + 28 + 4.5 = 32.5
-
-        assertEquals(Kbju(expectedCal, expectedProt, expectedFat, expectedCarb), result)
+        assertEquals(Kbju(425.0, 50.0, 15.5, 32.5), result)
     }
 
     @ParameterizedTest
