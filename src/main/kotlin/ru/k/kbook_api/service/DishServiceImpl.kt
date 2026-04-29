@@ -42,7 +42,7 @@ class DishServiceImpl(
         val macroHit = findFirstMacro(request.name)
         val categoryFromForm = request.category
         val category = categoryFromForm ?: macroHit?.category
-            ?: throw IllegalArgumentException("Укажите категорию блюда или макрос категории в названии")
+        ?: throw IllegalArgumentException("Укажите категорию блюда или макрос категории в названии")
 
         val cleanName = macroHit?.let { stripMacro(request.name, it) }?.trim() ?: request.name.trim()
         require(cleanName.length >= 2) { "Название после обработки макроса должно быть не короче 2 символов" }
@@ -246,23 +246,25 @@ class DishServiceImpl(
         )
     }
 
-    override suspend fun calculateKbju(composition: List<DishProduct>): Kbju =
-        withContext(Dispatchers.IO) {
-            var cal = 0.0
-            var prot = 0.0
-            var fat = 0.0
-            var carb = 0.0
-            composition.forEach { line ->
-                val product = productRepository.findByIdOrNull(line.productId)
-                    ?: throw IllegalArgumentException("Продукт с id ${line.productId} не найден")
-                val per100g = line.quantity / 100.0
-                cal += product.caloricity * per100g
-                prot += product.protein * per100g
-                fat += product.fat * per100g
-                carb += product.carb * per100g
+    // TODO("calculateKbju")
+    override suspend fun calculateKbju(composition: List<DishProduct>): Kbju = withContext(Dispatchers.IO) {
+        var cal = 0.0
+        var prot = 0.0
+        var fat = 0.0
+        var carb = 0.0
+        composition.forEach { line ->
+            require(line.quantity >= 0) { "Количество не может быть отрицательным" }
+            val product = requireNotNull(productRepository.findByIdOrNull(line.productId)) {
+                "Продукт с id ${line.productId} не найден"
             }
-            Kbju(cal, prot, fat, carb)
+            val per100g = line.quantity / 100.0
+            cal += product.caloricity * per100g
+            prot += product.protein * per100g
+            fat += product.fat * per100g
+            carb += product.carb * per100g
         }
+        Kbju(cal, prot, fat, carb)
+    }
 
     override suspend fun getAvailableFlags(composition: List<DishProduct>): Set<DishFlag> =
         withContext(Dispatchers.IO) { availableFlagsForComposition(composition) }

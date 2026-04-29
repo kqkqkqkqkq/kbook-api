@@ -42,11 +42,6 @@ class DishServiceTest {
 
     @BeforeEach
     fun beforeEach() {
-
-    }
-
-    @AfterEach
-    fun afterEach() {
         clearAllMocks()
     }
 
@@ -54,7 +49,7 @@ class DishServiceTest {
     @Ignore
     @DisplayName("Сломанный тест")
     @Description("Для проверки allure отчета")
-    @Severity(SeverityLevel.NORMAL)
+    @Severity(SeverityLevel.TRIVIAL)
     @Owner(owner)
     fun `SHOULD BE IGNORED`() {
         assertEquals(1, 1)
@@ -76,12 +71,27 @@ class DishServiceTest {
     @Test
     @DisplayName("Передан несуществующий продукт")
     @Description("В ситуации, когда в списке содержится несуществующий продукт будет выброшен IllegalArgumentException")
-    @Severity(SeverityLevel.NORMAL)
+    @Severity(SeverityLevel.MINOR)
     @Owner(owner)
     fun `GIVEN non existing product WHEN call calculateKbju THEN throw IllegalArgumentException`() = runTest {
         val id = 91282L
         val composition = listOf(DishProduct(id, null, 1489.0))
         coEvery { productRepository.findByIdOrNull(id) } returns null
+        assertThrows<IllegalArgumentException> {
+            val result = dishService.calculateKbju(composition)
+        }
+    }
+
+    @Test
+    @DisplayName("Передано отрицательное количество продукта")
+    @Description("При отрицаительном количестве продукта будет выброшенно исключение IllegalArgumentException")
+    @Severity(SeverityLevel.NORMAL)
+    @Owner(owner)
+    fun `GIVEN negative quantity WHEN call calculateKbju THEN throw IllegalArgumentException`() = runTest {
+        val product = chicken
+        coEvery { productRepository.findByIdOrNull(product.id!!) } returns product
+        val composition = listOf(DishProduct(product.id!!, null, -100.0))
+
         assertThrows<IllegalArgumentException> {
             val result = dishService.calculateKbju(composition)
         }
@@ -98,9 +108,9 @@ class DishServiceTest {
         coEvery { productRepository.findByIdOrNull(avocado.id!!) } returns avocado
 
         val composition = listOf(
-            DishProduct(chicken.id!!, null, 150.0), // 150г курицы
-            DishProduct(rice.id!!, null, 100.0),     // 100г риса
-            DishProduct(avocado.id!!, null, 50.0),   // 50г авокадо
+            DishProduct(chicken.id!!, null, 150.0),
+            DishProduct(rice.id!!, null, 100.0),
+            DishProduct(avocado.id!!, null, 50.0),
         )
 
         val result = dishService.calculateKbju(composition)
@@ -112,7 +122,6 @@ class DishServiceTest {
 
         assertEquals(Kbju(expectedCal, expectedProt, expectedFat, expectedCarb), result)
     }
-
 
     @ParameterizedTest
     @MethodSource("kbjuTestData")
@@ -154,7 +163,7 @@ class DishServiceTest {
 
         val rice = Product(
             id = 2,
-            name = "Бурый рис",
+            name = "Рис",
             caloricity = 120.0,
             protein = 4.0,
             fat = 0.5,
@@ -173,18 +182,5 @@ class DishServiceTest {
             category = ProductCategory.VEGETABLES,
             cookingRequired = CookingRequired.READY_TO_EAT
         ).toProductDbo()
-
-        val eggs = Product(
-            id = 5,
-            name = "Куриные яйца",
-            caloricity = 155.0,
-            protein = 12.6,
-            fat = 11.0,
-            carb = 1.1,
-            category = ProductCategory.FROZEN,
-            cookingRequired = CookingRequired.REQUIRES_COOKING
-        ).toProductDbo()
-
-        val products = listOf(chicken, rice, avocado, eggs)
     }
 }
