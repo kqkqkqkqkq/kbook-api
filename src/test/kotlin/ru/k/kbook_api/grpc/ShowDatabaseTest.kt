@@ -22,7 +22,7 @@ class ShowDatabaseTest(
 //    }
 //
 //    @Test
-//    fun `SHOW DATABASE COLLECT VALUES`() = runTest {
+//    fun `SHOW DATABASE KEEP VALUES`() = runTest {
 //        val name = "Test product"
 //        val request = ProductModelBuilder.listProductsRequest()
 //        val products = service.listProducts(request).productsList
