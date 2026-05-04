@@ -1,21 +1,18 @@
 package ru.k.kbook_api.service
 
-import io.qameta.allure.Description;
-import io.qameta.allure.Owner;
-import io.qameta.allure.Severity;
-import org.junit.jupiter.api.DisplayName;
-import io.kotest.core.spec.style.AnnotationSpec.AfterEach
 import io.kotest.core.spec.style.AnnotationSpec.BeforeEach
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
+import io.qameta.allure.Description
+import io.qameta.allure.Owner
+import io.qameta.allure.Severity
 import io.qameta.allure.SeverityLevel
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.data.repository.findByIdOrNull
 import ru.k.kbook_api.mapper.toProductDbo
@@ -32,6 +29,7 @@ import kotlin.test.assertEquals
 
 const val owner = "K"
 
+@DisplayName("Тесты сервиса для работы с блюдами")
 class DishServiceTest {
 
     private val productRepository = mockk<ProductRepository>(relaxed = true)
