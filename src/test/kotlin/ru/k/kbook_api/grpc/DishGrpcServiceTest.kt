@@ -14,6 +14,7 @@ import ru.k.kbook_api.grpc.product.ProductDto
 import ru.k.kbook_api.repository.DishRepository
 import ru.k.kbook_api.repository.ProductRepository
 import ru.k.kbook_api.service.model.product.Product
+import kotlin.code
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
@@ -36,19 +37,19 @@ class DishGrpcServiceTest(
     }
 
     @Test
-    fun `GIVEN dish name is one symbol WHEN call createDish THEN throw INVALID_ARGUMENT`() = runTest {
+    fun `GIVEN dish name is one symbol WHEN call createDish THEN throw StatusException`() = runTest {
         val request = DishModelBuilder.createDishRequest(name = "A")
         assertFailsWith<StatusException> { dishService.createDish(request) }
     }
 
     @Test
-    fun `GIVEN dish name is empty WHEN call createDish THEN throw INVALID_ARGUMENT`() = runTest {
+    fun `GIVEN dish name is empty WHEN call createDish THEN throw StatusException`() = runTest {
         val request = DishModelBuilder.createDishRequest(name = "")
         assertFailsWith<StatusException> { dishService.createDish(request) }
     }
 
     @Test
-    fun `GIVEN more than 5 images WHEN call createDish THEN throw INVALID_ARGUMENT`() = runTest {
+    fun `GIVEN more than 5 images WHEN call createDish THEN throw StatusException`() = runTest {
         val images = (1..6).map { DishModelBuilder.dishImage(url = "url-$it") }
         val composition = listOf(DishModelBuilder.dishProduct(productId = createTestProduct().id))
         val request = DishModelBuilder.createDishRequestWithComposition(composition = composition)
@@ -59,20 +60,20 @@ class DishGrpcServiceTest(
     }
 
     @Test
-    fun `GIVEN empty composition WHEN call createDish THEN throw INVALID_ARGUMENT`() = runTest {
+    fun `GIVEN empty composition WHEN call createDish THEN throw StatusException`() = runTest {
         val request = DishModelBuilder.createDishRequest()
         assertFailsWith<StatusException> { dishService.createDish(request) }
     }
 
     @Test
-    fun `GIVEN portion size zero WHEN call createDish THEN throw INVALID_ARGUMENT`() = runTest {
+    fun `GIVEN portion size zero WHEN call createDish THEN throw StatusException`() = runTest {
         val composition = listOf(DishModelBuilder.dishProduct(productId = createTestProduct().id))
         val request = DishModelBuilder.createDishRequestWithComposition(portionSize = 0.0, composition = composition)
         assertFailsWith<StatusException> { dishService.createDish(request) }
     }
 
     @Test
-    fun `GIVEN negative quantity in composition WHEN call createDish THEN throw INVALID_ARGUMENT`() = runTest {
+    fun `GIVEN negative quantity in composition WHEN call createDish THEN throw StatusException`() = runTest {
         val productId = createTestProduct().id
         val composition = listOf(DishModelBuilder.dishProduct(productId = productId, quantity = -10.0))
         val request = DishModelBuilder.createDishRequestWithComposition(composition = composition)
@@ -80,7 +81,7 @@ class DishGrpcServiceTest(
     }
 
     @Test
-    fun `GIVEN nonexistent product in composition WHEN call createDish THEN throw INVALID_ARGUMENT`() = runTest {
+    fun `GIVEN nonexistent product in composition WHEN call createDish THEN throw StatusException`() = runTest {
         val composition = listOf(DishModelBuilder.dishProduct(productId = 999L))
         val request = DishModelBuilder.createDishRequestWithComposition(composition = composition)
         assertFailsWith<StatusException> { dishService.createDish(request) }
@@ -251,6 +252,18 @@ class DishGrpcServiceTest(
         val request = DishModelBuilder.createDishRequest(name = "")
         val response = dishService.validateDish(request)
         assertEquals(false, response.valid)
+    }
+
+    @Test
+    fun `GIVEN product is used in dish WHEN call deleteProduct THEN return failure with dish names`() = runTest {
+        val productId = createTestProduct("Used Apple").id
+        val composition = listOf(DishModelBuilder.dishProduct(productId = productId))
+        dishService.createDish(DishModelBuilder.createDishRequestWithComposition(name = "Borscht", composition = composition))
+
+        val deleteRequest = ProductModelBuilder.deleteProductRequest(id = productId)
+        val result = productService.deleteProduct(deleteRequest)
+
+        assertEquals("Borscht", result.usedInDishesList.first())
     }
 
     private suspend fun createTestProduct(name: String = "Test Product"): ProductDto {

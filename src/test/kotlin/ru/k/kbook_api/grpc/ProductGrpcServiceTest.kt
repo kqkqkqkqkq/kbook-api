@@ -12,6 +12,7 @@ import ru.k.kbook_api.grpc.product.ProductCategoryDto
 import ru.k.kbook_api.repository.ProductRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -196,5 +197,11 @@ class ProductGrpcServiceTest(
         val deleteResponse = service.deleteProduct(DeleteProductRequest.newBuilder().setId(response.product.id).build())
         val list = service.listProducts(ProductModelBuilder.listProductsRequest())
         assertTrue(list.productsList.isEmpty())
+    }
+
+    @Test
+    fun `GIVEN non-existing product id WHEN call deleteProduct THEN return success false`() = runTest {
+        val result = service.deleteProduct(DeleteProductRequest.newBuilder().setId(999).build())
+        assertEquals(false, result.success)
     }
 }

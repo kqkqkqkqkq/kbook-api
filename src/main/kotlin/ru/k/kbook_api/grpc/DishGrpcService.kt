@@ -91,9 +91,6 @@ class DishGrpcService(
     } catch (e: Exception) {
         logger.error(e.message)
         throw StatusException(Status.INTERNAL.withDescription(e.message))
-    } catch (e: Exception) {
-        logger.error("Unexpected error in create listDishes", e)
-        throw StatusException(Status.INTERNAL.withDescription("Internal server error: ${e.message}"))
     }
 
     override suspend fun validateDish(request: CreateDishRequest): ValidateDishResponse = try {
