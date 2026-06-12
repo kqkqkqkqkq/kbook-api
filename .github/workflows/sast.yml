@@ -1,0 +1,33 @@
+name: SAST
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  semgrep-scan:
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Semgrep with OWASP Top 10 rules
+        run: |
+          semgrep scan --config "p/java" --config "p/owasp-top-ten" --json --output report.json
+
+      - name: Upload SARIF report for GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: report.json
