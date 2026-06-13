@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run Semgrep with OWASP Top 10 rules
-        run: semgrep scan --config "p/kotlin" --config "p/owasp-top-ten" --config "p/spring-boot" --config "/src/config/semgrep/semgrep.yml" --sarif --output report.json
+        run: semgrep scan --config "p/kotlin" --config "p/owasp-top-ten" --config "p/spring-boot" --sarif --output report.json
 
       - name: Upload SARIF report for GitHub Security tab
         uses: github/codeql-action/upload-sarif@v4
