@@ -27,7 +27,6 @@ jobs:
 
       - name: Run Semgrep with OWASP Top 10 rules
         run: |
-          semgrep scan \
             --config "p/kotlin" \
             --config "p/owasp-top-ten" \
             --config "p/spring-boot" \
