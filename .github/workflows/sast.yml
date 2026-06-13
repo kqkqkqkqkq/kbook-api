@@ -27,7 +27,9 @@ jobs:
 
       - name: Run Semgrep with OWASP Top 10 rules
         run: |
-          semgrep scan --config "p/kotlin" --config "p/owasp-top-ten" --sarif --output=report.sarif
+          ls -la
+          echo "---"
+          semgrep scan --config "p/kotlin" --config "p/owasp-top-ten" --config "config/semgrep/semgrep.yml" --sarif --output=report.sarif
 
       - name: Upload SARIF report for GitHub Security tab
         uses: github/codeql-action/upload-sarif@v4
