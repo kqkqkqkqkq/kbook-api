@@ -31,7 +31,7 @@ jobs:
             --config "p/kotlin" \
             --config "p/owasp-top-ten" \
             --config "p/spring-boot" \
-            --config "config/semgrep/semgrep.yml" \
+            --config "/src/config/semgrep/semgrep.yml" \
             --sarif \
             --output report.json
 
