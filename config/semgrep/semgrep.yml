@@ -27,3 +27,14 @@ rules:
         ...
     }
     severity: HIGH
+  - id: empty-catch
+    languages:
+      - kotlin
+    message: Found Empty Catch Block
+    pattern: |
+      try {
+        ...
+      } catch (e : Exception) {
+      
+      }
+    severity: LOW
