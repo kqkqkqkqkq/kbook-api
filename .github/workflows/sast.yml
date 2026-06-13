@@ -20,15 +20,23 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
-    container:
-      image: returntocorp/semgrep
+      actions: read
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Run Semgrep with OWASP Top 10 rules
-        run: semgrep scan --config "p/kotlin" --config "p/owasp-top-ten" --config "./config/semgrep/semgrep.yml" --sarif --output=report.sarif
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/src" semgrep/semgrep \
+            semgrep scan \
+            --config "p/kotlin" \
+            --config "p/owasp-top-ten" \
+            --config "./config/semgrep/semgrep.yml" \
+            --sarif --output=report.sarif
 
       - name: Upload SARIF report for GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
         with:
           sarif_file: report.sarif
