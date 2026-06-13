@@ -31,7 +31,9 @@ jobs:
           --config "p/owasp-top-ten" \
           --config "p/spring-boot" \
           --config "./config/semgrep/semgrep.yml" \
-          --sarif-output="report.sarif"
+          --sarif \
+          -o report.sarif \
+          ./
 
       - name: Upload SARIF report for GitHub Security tab
         uses: github/codeql-action/upload-sarif@v4
